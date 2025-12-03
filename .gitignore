@@ -4,6 +4,7 @@ wandb
 outputs
 data
 data_local
+.idea
 .vscode
 _wandb
 
