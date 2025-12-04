@@ -28,20 +28,20 @@ logging:
   group: null
   id: null
   mode: online
-  name: train_diffusion_transformer_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
+  name: train_dit_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
   project: diffusion_policy_debug
   resume: true
   tags:
-  - train_diffusion_transformer_hybrid
+  - train_dit_hybrid
   - tr01_pickup_image
   - default
 multi_run:
-  run_dir: data/outputs/tr01/train_diffusion_transformer_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
-  wandb_name_base: train_diffusion_transformer_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
+  run_dir: data/outputs/tr01/train_dit_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
+  wandb_name_base: train_dit_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
 n_action_steps: 8
 n_latency_steps: 0
 n_obs_steps: 4
-name: train_diffusion_transformer_hybrid
+name: train_dit_hybrid
 #obs_as_global_cond: true
 obs_as_cond: True
 optimizer:
