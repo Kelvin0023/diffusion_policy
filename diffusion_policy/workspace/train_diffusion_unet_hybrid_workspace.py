@@ -20,7 +20,7 @@ import tqdm
 import numpy as np
 import shutil
 from diffusion_policy.workspace.base_workspace import BaseWorkspace
-from diffusion_policy.policy.diffusion_unet_hybrid_image_policy import DiffusionUnetHybridImagePolicy
+from diffusion_policy.policy.diffusion_unet_hybrid_image_resnet_policy import DiffusionUnetHybridImageResNetPolicy
 from diffusion_policy.dataset.base_dataset import BaseImageDataset
 from diffusion_policy.env_runner.base_image_runner import BaseImageRunner
 from diffusion_policy.common.checkpoint_util import TopKCheckpointManager
@@ -44,9 +44,9 @@ class TrainDiffusionUnetHybridWorkspace(BaseWorkspace):
         random.seed(seed)
 
         # configure model
-        self.model: DiffusionUnetHybridImagePolicy = hydra.utils.instantiate(cfg.policy)
+        self.model: DiffusionUnetHybridImageResNetPolicy = hydra.utils.instantiate(cfg.policy)
 
-        self.ema_model: DiffusionUnetHybridImagePolicy = None
+        self.ema_model: DiffusionUnetHybridImageResNetPolicy = None
         if cfg.training.use_ema:
             self.ema_model = copy.deepcopy(self.model)
 
@@ -190,7 +190,7 @@ class TrainDiffusionUnetHybridWorkspace(BaseWorkspace):
 
                         is_last_batch = (batch_idx == (len(train_dataloader)-1))
                         if not is_last_batch:
-                            # log of last step is combined with validation and rollout
+                            # log of last step is combined with validation
                             wandb_run.log(step_log, step=self.global_step)
                             json_logger.log(step_log)
                             self.global_step += 1
@@ -209,12 +209,6 @@ class TrainDiffusionUnetHybridWorkspace(BaseWorkspace):
                 if cfg.training.use_ema:
                     policy = self.ema_model
                 policy.eval()
-
-                # run rollout
-                if (self.epoch % cfg.training.rollout_every) == 0:
-                    runner_log = env_runner.run(policy)
-                    # log all
-                    step_log.update(runner_log)
 
                 # run validation
                 if (self.epoch % cfg.training.val_every) == 0:
@@ -278,7 +272,7 @@ class TrainDiffusionUnetHybridWorkspace(BaseWorkspace):
                 policy.train()
 
                 # end of epoch
-                # log of last step is combined with validation and rollout
+                # log of last step is combined with validation
                 wandb_run.log(step_log, step=self.global_step)
                 json_logger.log(step_log)
                 self.global_step += 1

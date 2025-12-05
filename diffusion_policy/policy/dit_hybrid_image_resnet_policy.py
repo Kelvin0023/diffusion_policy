@@ -15,9 +15,9 @@ from robomimic.algo import algo_factory
 from robomimic.algo.algo import PolicyAlgo
 import robomimic.utils.obs_utils as ObsUtils
 import robomimic.models.base_nets as rmbn
+from robomimic.models.base_nets import ResNet18Conv
 import diffusion_policy.model.vision.crop_randomizer as dmvc
 from diffusion_policy.common.pytorch_util import dict_apply, replace_submodules
-from robomimic.models.base_nets import ResNet18Conv
 
 
 class DiTHybridImageResNetPolicy(BaseImagePolicy):
@@ -84,6 +84,12 @@ class DiTHybridImageResNetPolicy(BaseImagePolicy):
             # set config with shape_meta
             config.observation.modalities.obs = obs_config
 
+            rgb_enc = config.observation.encoder.rgb
+            rgb_enc.core_kwargs.backbone_class = 'ResNet18Conv'
+            if not hasattr(rgb_enc.core_kwargs, "backbone_kwargs"):
+                rgb_enc.core_kwargs.backbone_kwargs = {}
+            rgb_enc.core_kwargs.backbone_kwargs.pretrained = True
+
             if crop_shape is None:
                 for key, modality in config.observation.encoder.items():
                     if modality.obs_randomizer_class == 'CropRandomizer':
@@ -97,7 +103,6 @@ class DiTHybridImageResNetPolicy(BaseImagePolicy):
                         modality.obs_randomizer_kwargs.crop_width = cw
 
         # init global state
-        ObsUtils.OBS_ENCODER_CORES["ResNet18Conv"] = ResNet18Conv(pretrained=True)
         ObsUtils.initialize_obs_utils_with_config(config)
 
         # load model
@@ -114,10 +119,11 @@ class DiTHybridImageResNetPolicy(BaseImagePolicy):
         if freeze_resnet:
             for m in obs_encoder.modules():
                 if isinstance(m, ResNet18Conv):
-                    # Stop grads
                     for p in m.parameters():
                         p.requires_grad = False
-                    # Optional: fix BN stats if any remain
+
+                # keep BN in eval mode to avoid updating running stats
+                if isinstance(m, nn.BatchNorm2d):
                     m.eval()
 
         if obs_encoder_group_norm:

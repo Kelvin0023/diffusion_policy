@@ -84,7 +84,7 @@ policy:
   shape_meta:
     action:
       shape:
-      - 15
+      - 14
     obs:
       ur5_joint_pos:
         shape:
@@ -103,7 +103,7 @@ policy:
 shape_meta:
   action:
     shape:
-    - 15
+    - 14
   obs:
     ur5_joint_pos:
       shape:
@@ -128,8 +128,8 @@ task:
     pad_before: 3
     seed: 42
     val_ratio: 0.02
-    zarr_path: ../diffusion_policy/data/pickup_yellow.zarr
-    use_rel_actions: false
+    zarr_path: ../diffusion_policy/data/pickup_yellow_rel.zarr
+    use_rel_actions: true
     data_freq: 20
     learning_freq: 20
   env_runner:
@@ -142,7 +142,7 @@ task:
   shape_meta:
     action:
       shape:
-      - 15
+      - 14
     obs:
       ur5_joint_pos:
         shape:

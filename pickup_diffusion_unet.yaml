@@ -1,4 +1,4 @@
-_target_: diffusion_policy.workspace.train_dit_hybrid_workspace.TrainDiTHybridWorkspace
+_target_: diffusion_policy.workspace.train_diffusion_unet_hybrid_workspace.TrainDiffusionUnetHybridWorkspace
 checkpoint:
   save_last_ckpt: true
   save_last_snapshot: false
@@ -9,9 +9,9 @@ checkpoint:
     monitor_key: val_loss
 dataloader:
   batch_size: 16
-  num_workers: 0
+  num_workers: 4
   persistent_workers: false
-  pin_memory: false
+  pin_memory: true
   shuffle: true
 dataset_obs_steps: 2
 ema:
@@ -28,59 +28,58 @@ logging:
   group: null
   id: null
   mode: online
-  name: train_dit_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
+  name: train_diffusion_unet_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
   project: diffusion_policy_debug
   resume: true
   tags:
-  - train_dit_hybrid
+  - train_diffusion_unet_hybrid
   - tr01_pickup_image
   - default
 multi_run:
-  run_dir: data/outputs/tr01/train_dit_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
-  wandb_name_base: train_dit_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
+  run_dir: data/outputs/tr01/train_diffusion_unet_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
+  wandb_name_base: train_diffusion_unet_hybrid_tr01_pickup_image_{date:%Y.%m.%d}/{time:%H.%M.%S}
 n_action_steps: 8
 n_latency_steps: 0
-n_obs_steps: 4
-name: train_dit_hybrid
-#obs_as_global_cond: true
-obs_as_cond: True
+n_obs_steps: 2
+name: train_diffusion_unet_hybrid
+obs_as_global_cond: true
 optimizer:
-  transformer_weight_decay: 1.0e-3
-  obs_encoder_weight_decay: 1.0e-6
-  learning_rate: 1.0e-4
-  betas: [ 0.9, 0.95 ]
+  _target_: torch.optim.AdamW
+  betas:
+  - 0.95
+  - 0.999
+  eps: 1.0e-08
+  lr: 0.0001
+  weight_decay: 1.0e-06
 past_action_visible: false
 policy:
-  _target_: diffusion_policy.policy.dit_hybrid_image_resnet_policy.DiTHybridImageResNetPolicy
+  _target_: diffusion_policy.policy.diffusion_unet_hybrid_image_resnet_policy.DiffusionUnetHybridImageResNetPolicy
+  cond_predict_scale: true
   crop_shape: [600, 450]
+  diffusion_step_embed_dim: 128
+  down_dims:
+  - 512
+  - 1024
+  - 2048
   eval_fixed_crop: true
   freeze_resnet: true
   horizon: 16
+  kernel_size: 5
   n_action_steps: 8
-  n_obs_steps: 4
+  n_groups: 8
+  n_obs_steps: 2
   noise_scheduler:
-    _target_: diffusers.schedulers.scheduling_ddim.DDIMScheduler
+    _target_: diffusers.schedulers.scheduling_ddim.DDIMScheduler # diffusers.schedulers.scheduling_ddpm.DDPMScheduler
     beta_end: 0.02
     beta_schedule: squaredcos_cap_v2
     beta_start: 0.0001
     clip_sample: true
     num_train_timesteps: 100
     prediction_type: epsilon
-#    variance_type: fixed_small
-  num_inference_steps: 8  # 100 for ddpm, 8 for ddim
-#  obs_as_global_cond: true
-  obs_as_cond: True
+#    variance_type: fixed_small  # comment this line for DDIM
+  num_inference_steps: 8  # 100 for DDPM, 8 for DDIM
+  obs_as_global_cond: true
   obs_encoder_group_norm: true
-
-  n_layer: 8
-  n_cond_layers: 0  # >0: use transformer encoder for cond, otherwise use MLP
-  n_head: 4
-  n_emb: 256
-  p_drop_emb: 0.0
-  p_drop_attn: 0.3
-  causal_attn: True
-  time_as_cond: True # if false, use BERT like encoder only arch, time as input
-
   shape_meta:
     action:
       shape:
@@ -125,7 +124,7 @@ task:
     horizon: 16
     max_train_episodes: None
     pad_after: 7
-    pad_before: 3
+    pad_before: 1
     seed: 42
     val_ratio: 0.02
     zarr_path: ../diffusion_policy/data/pickup_yellow.zarr
@@ -178,7 +177,7 @@ training:
   val_every: 1
 val_dataloader:
   batch_size: 16
-  num_workers: 0
+  num_workers: 4
   persistent_workers: false
-  pin_memory: false
+  pin_memory: true
   shuffle: false
