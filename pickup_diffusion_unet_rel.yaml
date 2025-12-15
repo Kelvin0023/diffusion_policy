@@ -93,6 +93,10 @@ policy:
         shape:
           - 8
         type: low_dim
+      ur5_ee_pose:
+        shape:
+          - 7
+        type: low_dim
       camera_rgb_image:
         shape:
         - 3
@@ -112,6 +116,10 @@ shape_meta:
       shape:
         - 8
       type: low_dim
+    ur5_ee_pose:
+      shape:
+        - 7
+      type: low_dim
     camera_rgb_image:
       shape:
       - 3
@@ -127,7 +135,7 @@ task:
     pad_before: 1
     seed: 42
     val_ratio: 0.02
-    zarr_path: ../diffusion_policy/data/pickup_yellow_rel.zarr
+    zarr_path: ../diffusion_policy/data/yellow_easy.zarr
     use_rel_actions: true
     data_freq: 20
     learning_freq: 20
@@ -150,6 +158,10 @@ task:
       hand_joint_pos:
         shape:
           - 8
+        type: low_dim
+      ur5_ee_pose:
+        shape:
+          - 7
         type: low_dim
       camera_rgb_image:
         shape:

@@ -94,6 +94,10 @@ policy:
         shape:
           - 8
         type: low_dim
+      ur5_ee_pose:
+        shape:
+          - 7
+        type: low_dim
       camera_rgb_image:
         shape:
         - 3
@@ -112,6 +116,10 @@ shape_meta:
     hand_joint_pos:
       shape:
         - 8
+      type: low_dim
+    ur5_ee_pose:
+      shape:
+        - 7
       type: low_dim
     camera_rgb_image:
       shape:
@@ -151,6 +159,10 @@ task:
       hand_joint_pos:
         shape:
           - 8
+        type: low_dim
+      ur5_ee_pose:
+        shape:
+          - 7
         type: low_dim
       camera_rgb_image:
         shape:

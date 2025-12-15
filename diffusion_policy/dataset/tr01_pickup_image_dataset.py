@@ -45,10 +45,10 @@ class PickupImageDataset(BaseImageDataset):
         # Flag for absolute/relative actions
         self.use_rel_actions = use_rel_actions
         if self.use_rel_actions:
-            data_keys = ["camera_rgb_image", "hand_joint_pos", "ur5_joint_pos",
+            data_keys = ["camera_rgb_image", "hand_joint_pos", "ur5_joint_pos", "ur5_ee_pose",
                          "hand_action_rel", "ur5_action_rel"]
         else:
-            data_keys = ["camera_rgb_image", "hand_joint_pos", "ur5_joint_pos",
+            data_keys = ["camera_rgb_image", "hand_joint_pos", "ur5_joint_pos", "ur5_ee_pose",
                          "hand_action", "ur5_action"]
 
         if isinstance(max_train_episodes, str):
@@ -140,6 +140,7 @@ class PickupImageDataset(BaseImageDataset):
         data = {
             "hand_joint_pos": self.replay_buffer["hand_joint_pos"],
             "ur5_joint_pos": self.replay_buffer["ur5_joint_pos"],
+            "ur5_ee_pose": self.replay_buffer["ur5_ee_pose"],
             "action": action
         }
         normalizer = LinearNormalizer()
@@ -150,6 +151,7 @@ class PickupImageDataset(BaseImageDataset):
     def _sample_to_data(self, sample):
         ur5_pos = sample['ur5_joint_pos'].astype(np.float32)  # T, 6
         hand_pos = sample['hand_joint_pos'].astype(np.float32)  # T, 8
+        ur5_ee_pos = sample['ur5_ee_pose'].astype(np.float32)  # T, 7
 
         if self.use_rel_actions:
             ur5_action = sample['ur5_action_rel'].astype(np.float32)   # T, 6
@@ -166,6 +168,7 @@ class PickupImageDataset(BaseImageDataset):
                 'camera_rgb_image': rgb_image,  # T, 3, H, W
                 'ur5_joint_pos': ur5_pos,       # T, 6
                 'hand_joint_pos': hand_pos,     # T, 8
+                'ur5_ee_pose': ur5_ee_pos,      # T, 7
             },
             'action': action  # T, 14 or T, 15
         }
@@ -200,13 +203,14 @@ class PickupImageDataset(BaseImageDataset):
 
 
 def test():
-    dataset_path = "/home/kai/gripper-ros2/collected_data/test_tr01_replay.zarr"
+    dataset_path = "/home/kai/gripper-ros2/collected_data/yellow_easy.zarr"
     dataset = PickupImageDataset(
         zarr_path=dataset_path,
         horizon=5,
         max_train_episodes=None,
         data_freq=20,
         learning_freq=10,
+        use_rel_actions=True,
     )
     print(f"Dataset length: {len(dataset)}")
     print(f"Skip factor: {dataset.skip_factor}")
@@ -217,6 +221,7 @@ def test():
     print("camera_rgb_image shape:", sample['obs']['camera_rgb_image'].shape)
     print("ur5_joint_pos shape:", sample['obs']['ur5_joint_pos'].shape)
     print("hand_joint_pos shape:", sample['obs']['hand_joint_pos'].shape)
+    print("ur5_ee_pose shape:", sample['obs']['ur5_ee_pose'].shape)
     print("action shape:", sample['action'].shape)
 
     # cleanup
