@@ -160,7 +160,7 @@ class PickupImageDataset(BaseImageDataset):
             ur5_action = sample['ur5_action'].astype(np.float32)   # T, 7
             hand_action = sample['hand_action'].astype(np.float32) # T, 8
 
-        rgb_image = np.moveaxis(sample['camera_rgb_image'], -1, 1) / 255.0
+        rgb_image = sample['camera_rgb_image'] / 255.0  # T, 3, H, W
         action = np.concatenate([ur5_action, hand_action], axis=-1)
 
         data = {
@@ -203,7 +203,7 @@ class PickupImageDataset(BaseImageDataset):
 
 
 def test():
-    dataset_path = "/home/kai/gripper-ros2/collected_data/yellow_easy.zarr"
+    dataset_path = "/home/kai/gripper-ros2/collected_data_pickup_yellow/pickup_yellow_1216.zarr"
     dataset = PickupImageDataset(
         zarr_path=dataset_path,
         horizon=5,
